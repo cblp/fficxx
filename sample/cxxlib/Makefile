@@ -1,10 +1,18 @@
-TARGET = lib/libmysample.so
+NAME = libmysample.so
+TARGET = lib/$(NAME)
 SOURCES = src/A.cpp src/B.cpp
 CPPFLAGS = -Iinclude
 CXXFLAGS = -fPIC
-LDFLAGS = -shared -Wl,-soname,libmysample.so
+LDFLAGS = -shared
 
-objects = $(patsubst %.cpp,%.o,$(SOURCES))
+ifeq ($(shell uname), Darwin)
+	LIBNAMEFLAG = -install_name
+else
+	LIBNAMEFLAG = -soname
+endif
+LDFLAGS += -Wl,$(LIBNAMEFLAG),$(NAME)
+
+objects = $(patsubst %.cpp, %.o, $(SOURCES))
 $(TARGET): $(objects)
 	mkdir -p lib
-	$(CC) $(LDFLAGS) $(objects) -o $@
+	$(CXX) $(LDFLAGS) $(objects) -o $@
